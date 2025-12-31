@@ -3,6 +3,15 @@
 TODO generate this
 
 ```
+curl -X POST http://localhost:8082/deliverables \
+  -H "Content-Type: application/json" \
+  -d '{
+        "message": "Hello, this is a test deliverable"
+      }'
+      
+curl -X DELETE http://localhost:8082/deliverables/abc
+      
+
 curl -X POST http://localhost:8082/camel/deliverables \
   -H "Content-Type: application/json" \
   -d '{

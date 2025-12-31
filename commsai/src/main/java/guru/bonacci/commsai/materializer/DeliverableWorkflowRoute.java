@@ -34,13 +34,22 @@ public class DeliverableWorkflowRoute extends RouteBuilder {
         );
 
         // Start workflow asynchronously
-        WorkflowClient.start(workflow::scheduleDeliverable, msg, 1000L);
-
-        // cancelling mechanism
-        Thread.sleep(500);
-        // Create an untyped workflow stub for the workflow you want to cancel
-        WorkflowStub stub = workflowClient.newUntypedWorkflowStub(workflowId);
-//        stub.cancel();
+        WorkflowClient.start(workflow::scheduleDeliverable, msg, 5000L);
 			});
+		
+		from("direct:deldeliverable")
+		.process(exchange -> {
+			var id = exchange.getIn().getBody(String.class);
+			log.info("removing Deliverable from temporal '{}'", id);
+
+			var workflowId = "deliverable-" + id;
+      WorkflowStub stub = workflowClient.newUntypedWorkflowStub(workflowId);
+      try {
+        stub.cancel();
+        log.info("Workflow {} cancelled", workflowId);
+      } catch (io.temporal.client.WorkflowNotFoundException e) {
+        log.warn("Workflow {} not found or already completed", workflowId);
+      }
+		});
 	}
 }
