@@ -20,23 +20,37 @@ public class DeliverableController {
 
 	private final ProducerTemplate producerTemplate;
 
+	private static final String TOPIC = "deliverables";
+	
 	
 	@PostMapping("/deliverables")
 	public String create(@RequestBody DeliverableMessageRequest msgReq) {
 		var msg = new DeliverableMessage(UUID.randomUUID(), msgReq.message());
 		log.info("Ingress: received DeliverableMessage {}", msg.uuid());
 
-		// Send directly to your Camel route for processing
-		producerTemplate.sendBody("direct:deliverable", msg);
+    // Produce tombstone (key only, null value) to Kafka for compaction
+    producerTemplate.sendBodyAndHeader(
+    		"kafka:" + TOPIC + "?brokers=localhost:9092"
+            + "&keySerializer=org.apache.kafka.common.serialization.StringSerializer"
+            + "&valueSerializer=org.apache.kafka.common.serialization.StringSerializer",
+//            + "&valueSerializer=org.springframework.kafka.support.serializer.JsonSerializer",
+        msg,                     
+        "kafka.KEY", msg.uuid().toString()
+    );
+
 		return msg.uuid().toString();
 	}
 	
 	@DeleteMapping("/deliverables/{id}")
 	public void create(@PathVariable String id) {
 		log.info("Ingress: deleting Deliverable with id {}", id);
-
-		// Send directly to your Camel route for processing
-		producerTemplate.sendBody("direct:deldeliverable", id);
+		
+		// Produce tombstone (key only, null value) to Kafka for compaction
+    producerTemplate.sendBodyAndHeader(
+        "kafka:" + TOPIC + "?brokers=localhost:9092",
+        null,                     
+        "kafka.KEY", id            // the key for compaction
+    );
 	}
 
 }
