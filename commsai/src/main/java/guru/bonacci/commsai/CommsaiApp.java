@@ -4,10 +4,10 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class CommsaiApplication {
+public class CommsaiApp {
 
 	public static void main(String[] args) {
-		SpringApplication.run(CommsaiApplication.class, args);
+		SpringApplication.run(CommsaiApp.class, args);
 	}
 
 }
