@@ -1,38 +1,27 @@
 package guru.bonacci.commsai.egress;
 
-import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.ProducerTemplate;
 import org.springframework.stereotype.Component;
 
 import guru.bonacci.commsai.domain.DeliverableMessage;
-import guru.bonacci.commsai.workflow.DeliverableWorkflow;
-import io.temporal.client.WorkflowClient;
-import io.temporal.client.WorkflowOptions;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
-public class DeliverableEgressRoute extends RouteBuilder {
+public class DeliverableEgressRoute {
 
-	private final WorkflowClient workflowClient;
+	private final ProducerTemplate producerTemplate;
 
-	@Override
-	public void configure() throws Exception {
-		from("direct:deliverable")
-			.process(exchange -> {
-				DeliverableMessage msg = exchange.getIn().getBody(DeliverableMessage.class);
-				// Just print for now
-				log.info("Egress: sending Deliverable '{}'", msg.message());
-				
-				// Create a workflow stub
-        DeliverableWorkflow workflow = workflowClient.newWorkflowStub(
-            DeliverableWorkflow.class,
-            WorkflowOptions.newBuilder()
-                .setTaskQueue("DELIVERABLE_TASK_QUEUE")
-                .build()
-        );
+	/**
+	 * Sends a Deliverable into the internal Camel route. 
+	 * For now, route can handle logging or future delivery.
+	 */
+	public void sendDeliverable(DeliverableMessage msg) {
+		log.info("Egress sending Deliverable: uuid={}, message={}", msg.uuid(), msg.message());
 
-        // Start workflow asynchronously
-        WorkflowClient.start(workflow::scheduleDeliverable, msg, 1000L);
-			});
+		// Send message into Camel internal route for now
+		producerTemplate.sendBody("direct:egress", msg);
 	}
 }

@@ -1,4 +1,4 @@
-package guru.bonacci.commsai.egress;
+package guru.bonacci.commsai.materializer;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
